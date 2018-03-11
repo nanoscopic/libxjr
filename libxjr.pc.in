@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: XJR
+Description: XJR Library
+URL: http://carbonstate.com
+Version: 0.1
+Requires:
+Libs: -I${includedir}/xjr
+Cflags: -L${libdir} -lxjr
