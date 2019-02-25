@@ -310,15 +310,28 @@ int stripSpaces( char *val, int vallen, int *start, int *end ) {
     
     return 1;
 }
+int needsCdata( char *val, int vallen ) {
+    char map[255];
+    for( int i=0;i<255;i++ ) {
+        map[i] = 0x00;
+    }
+    map['<'] = 0x01;
+    map['{'] = 0x01;
+    char *ptr = val;
+    for( int j=0;j<vallen;j++,ptr++ ) {
+        if( map[ *ptr ] ) return 1;
+    }
+    return 0;
+}
 void xjr_node__dump( xjr_node *self, int depth ) {
     for( int i=0;i<depth;i++ ) { printf("  "); }
     int start;
     int end;
     if( self->val && stripSpaces( self->val, self->vallen, &start, &end ) ) {
-        printf( "%.*s:%.*s\n", self->namelen, self->name, (end-start+1), &self->val[start] );
+        fprintf( stderr, "%.*s:%.*s\n", self->namelen, self->name, (end-start+1), &self->val[start] );
     }
     else {
-        printf( "%.*s\n", self->namelen, self->name );
+        fprintf( stderr, "%.*s\n", self->namelen, self->name );
     }
     if( self->children ) {
         xjr_node *curChild = self->firstChild;
@@ -678,7 +691,15 @@ void xjr_node__xml_rec( xjr_node *self, int depth, xml_output *output ) {
                 innerOutput = 1;
                 valOutput = 1;
                 xml_output__addchar( output, '>' );
-                xml_output__addstr( output, &self->val[start], end-start+1 );
+                if( needsCdata( self->val, self->vallen ) ) {
+                    // Note this doesn't protect from ]]> within the string
+                    xml_output__addstr( output, "<![CDATA[", 9 );
+                    xml_output__addstr( output, &self->val[start], end-start+1 );
+                    xml_output__addstr( output, "]]>", 3 );
+                }
+                else {
+                    xml_output__addstr( output, &self->val[start], end-start+1 );
+                }
             }
         }
         
