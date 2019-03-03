@@ -86,6 +86,9 @@ xml_output *xjr_node__jsa( xjr_node *root, char ws );
 void xml_output__addchar( xml_output *output, char let );
 void xml_output__print( xml_output *self );
 char *xml_output__flatten( xml_output *self, int *len );
+int xml_output__flat_length( xml_output *self );
+void xml_output__flatten_preallocated( xml_output *self, char *output );
+
 xjr_key_arr *xjr_node__getkeys( xjr_node *self );
 
 #endif

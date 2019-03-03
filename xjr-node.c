@@ -516,6 +516,27 @@ void xml_output__delete( xml_output *self ) {
     free( self );
 }
 
+int xml_output__flat_length( xml_output *self ) {
+    xml_page *curPage = self->firstPage;
+    int totLen = 0;
+    while( curPage ) {
+        totLen += curPage->pos;
+        curPage = curPage->next;
+    }
+    return totLen;
+}
+
+void xml_output__flatten_preallocated( xml_output *self, char *output ) {
+    xml_page *curPage = self->firstPage;
+    char *outPos = output;
+    while( curPage ) {
+        memcpy( outPos, curPage->xml, curPage->pos );
+        outPos += curPage->pos;
+        curPage = curPage->next;
+    }
+    *outPos = 0x00;
+}
+
 char *xml_output__flatten( xml_output *self, int *len ) {
     xml_page *curPage = self->firstPage;
     int totLen = 0;
@@ -626,7 +647,16 @@ void xjr_node__xml_rec( xjr_node *self, int depth, xml_output *output ) {
         if( val[0] != ' ' ){
             xml_output__addspaces( output, depth*2 );
         }
-        xml_output__addstr( output, val, vallen );
+        if( needsCdata( val, vallen ) ) {
+            // Note this doesn't protect from ]]> within the string
+            xml_output__addstr( output, "<![CDATA[", 9 );
+            xml_output__addstr( output, val, vallen );
+            xml_output__addstr( output, "]]>", 3 );
+        }
+        else {        
+            xml_output__addstr( output, val, vallen );
+        }
+        
         return;
     }
     
