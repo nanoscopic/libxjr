@@ -82,6 +82,7 @@ void xml_output__delete( xml_output *self );
 
 xml_output *xjr_node__tree( xjr_node *root );
 xml_output *xjr_node__xml( xjr_node *root );
+xml_output *xjr_node__outerxml( xjr_node *root );
 xml_output *xjr_node__jsa( xjr_node *root, char ws );
 void xml_output__addchar( xml_output *output, char let );
 void xml_output__print( xml_output *self );

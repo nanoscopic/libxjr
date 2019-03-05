@@ -237,6 +237,8 @@ xjr_node *xjr_node__get( xjr_node *self, char *name, int namelen ) {
     if( !self->children ) return NULL;
     char dataType;
     void *data = string_tree__get_len( self->children, name, namelen, &dataType );
+    if( !data ) return NULL;
+    
     if( dataType == DT_VOIDCHAIN ) {
         dt_voidChain *cNode = ( dt_voidChain * ) data;
         return (xjr_node *) cNode->data;
@@ -629,6 +631,14 @@ xml_output *xjr_node__xml( xjr_node *root ) {
     return output;
 }
 
+xml_output *xjr_node__outerxml( xjr_node *root ) {
+    xml_output *output = xml_output__new();
+    assert( output != NULL );
+    
+    xjr_node__xml_rec( root, 0, output );
+    return output;
+}
+
 void xjr_node__xml_rec( xjr_node *self, int depth, xml_output *output ) {
     assert( self != NULL );
     assert( output != NULL );
@@ -645,7 +655,7 @@ void xjr_node__xml_rec( xjr_node *self, int depth, xml_output *output ) {
             vallen--;
         }
         if( val[0] != ' ' ){
-            xml_output__addspaces( output, depth*2 );
+            if( depth ) xml_output__addspaces( output, depth*2 );
         }
         if( needsCdata( val, vallen ) ) {
             // Note this doesn't protect from ]]> within the string
@@ -661,7 +671,7 @@ void xjr_node__xml_rec( xjr_node *self, int depth, xml_output *output ) {
     }
     
     if( depth >= 0 ) {
-        xml_output__addspaces( output, depth*2 );
+        if( depth ) xml_output__addspaces( output, depth*2 );
         xml_output__addchar( output, '<' ); // <
         xml_output__addstr( output, self->name, self->namelen ); // <node
         
