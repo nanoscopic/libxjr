@@ -51,6 +51,7 @@ void xjr_node__removeall( xjr_node *self, char *name, int namelen );
 void xjr_node__dump( xjr_node *self, int depth );
 void xjr_node__add( xjr_node *current, xjr_node *new );
 xjr_node *xjr_node__get( xjr_node *self, char *name, int namelen );
+xjr_node *xjr_node__clone( xjr_node *self, xjr_node *parent );
 xjr_arr *xjr_node__getarr( xjr_node *self, char *name, int namelen );
 char *xjr_node__value( xjr_node *self, int *len );
 char *xjr_node__name( xjr_node *self, int *len );

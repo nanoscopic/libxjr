@@ -50,7 +50,12 @@ void xjr_node__delete( xjr_node *self ) {
         
         string_tree__delete( self->children );
     }
-    if( !use_mempool ) free( self );
+    if( !use_mempool ) {
+        int flags = self->flags;
+        if( flags & FLAG_DYNNAME ) free( self->name );
+        if( flags & FLAG_DYNVAL ) free( self->val );
+        free( self );
+    }
 }
 
 void xjr_node__delete_snode_data( void *nodeV ) {
@@ -284,6 +289,40 @@ xjr_arr *xjr_node__getarr( xjr_node *self, char *name, int namelen ) {
     }
     return NULL;
 	//return string_tree__getarr_len( self->children, name, namelen );
+}
+xjr_node *xjr_node__clone( xjr_node *self, xjr_node *parent ) {
+    char *nameDup = NULL;
+    int nameLen = 0;
+    if( self->name ) {
+        nameLen = self->namelen;
+        nameDup = malloc( nameLen );
+        memcpy( nameDup, self->name, nameLen );
+    }
+    
+    char *valDup = NULL;
+    int valLen = 0;
+    if( self->val ) {
+        valLen = self->vallen;
+        valDup = malloc( valLen );
+        memcpy( valDup, self->val, valLen );
+    }
+    
+    xjr_node *clone = xjr_node__new( 0, nameDup, nameLen, parent );
+    if( valLen ) {
+        clone->val = valDup;
+        clone->vallen = valLen;
+        clone->flags |= FLAG_DYNVAL;
+    }
+    if( nameDup ) clone->flags |= FLAG_DYNNAME;
+    
+    if( self->children ) {
+        xjr_node *curChild = self->firstChild;
+        while( curChild ) {
+            xjr_node *childClone = xjr_node__clone( curChild, clone );
+            curChild = curChild->next;
+        }
+    }
+    return clone;
 }
 
 /*char isspace( char *val, int vallen ) {
