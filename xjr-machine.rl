@@ -110,7 +110,13 @@ void escape_inplace( char *str, int len, int *outlen ) {
         #ifdef DEBUG
         printf("Node name: [%.*s]\n", namelen, nodename );
         #endif
-        curnode = xjr_node__new( pool, nodename, namelen, curnode );
+        if( nodename[0] == '@' ) {
+            curnode = xjr_node__new( pool, nodename+1, namelen-1, curnode );
+            curnode->flags |= FLAG_ATT;
+        }
+        else {
+            curnode = xjr_node__new( pool, nodename, namelen, curnode );
+        }
     }
     
     start_node_name = node_type? ( print -- space -- [\-;!>{/=,\]] -- "[" )+ >NodeNameEntry %NodeNameExit;
